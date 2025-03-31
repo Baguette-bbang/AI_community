@@ -11,10 +11,10 @@
 
 ### 🔹 AI 융합학부 게시판 팀원 소개
 
-|                <img src="https://github.com/Baguette-bbang.png" width="150">                 |      <img src="https://github.com/new-coder-g.png" width="150">      |   <img src="https://github.com/tangerlyn.png" width="150">    |   <img src="https://github.com/offsam333.png" width="150">   |
-| :------------------------------------------------------------------------------------------: | :------------------------------------------------------------------: | :-----------------------------------------------------------: | :----------------------------------------------------------: |
-| [강영민](https://github.com/Baguette-bbang) <br/> 🛠 팀장 / 전체글 / 배포 / 도메인 / 홈페이지 | [차민재](https://github.com/new-coder-g) <br/> 💬 개발 메이트 페이지 | [김규린](https://github.com/tangerlyn) <br/> 📝 수강평 페이지 | [공승호](https://github.com/offsam333) <br/> 💡 PS 팁 페이지 |
-|                        `Baguette-bbang` <br/> 📧 dudals9701@naver.com                        |              `new-coder-g` <br/> 📧 mjcha0011@gmail.com              |           `tangerlyn` <br/> 📧 gyulyn7777@gmail.com           |           `offsam333` <br/> 📧 kozilla8@gmail.com            |
+|                    <img src="https://github.com/Baguette-bbang.png" width="150">                     |      <img src="https://github.com/new-coder-g.png" width="150">      |   <img src="https://github.com/tangerlyn.png" width="150">    |   <img src="https://github.com/offsam333.png" width="150">   |
+| :--------------------------------------------------------------------------------------------------: | :------------------------------------------------------------------: | :-----------------------------------------------------------: | :----------------------------------------------------------: |
+| [강영민](https://github.com/Baguette-bbang) <br/> 🛠 팀장 / 전체글 조회 / 배포 / 도메인 / 메인 페이지 | [차민재](https://github.com/new-coder-g) <br/> 💬 개발 메이트 페이지 | [김규린](https://github.com/tangerlyn) <br/> 📝 수강평 페이지 | [공승호](https://github.com/offsam333) <br/> 💡 PS 팁 페이지 |
+|                            `Baguette-bbang` <br/> 📧 dudals9701@naver.com                            |              `new-coder-g` <br/> 📧 mjcha0011@gmail.com              |           `tangerlyn` <br/> 📧 gyulyn7777@gmail.com           |           `offsam333` <br/> 📧 kozilla8@gmail.com            |
 
 ---
 
