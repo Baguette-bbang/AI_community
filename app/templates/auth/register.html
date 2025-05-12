@@ -1,0 +1,42 @@
+{% extends "base.html" %} {% block title %}회원가입 - AI Community{% endblock %} {% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card shadow">
+      <div class="card-header bg-success text-white">
+        <h4 class="mb-0">회원가입</h4>
+      </div>
+      <div class="card-body">
+        <div class="alert alert-success mb-3">
+          <i class="bi bi-check-circle-fill me-2"></i>
+          <strong>{{ email }}</strong> 주소가 성공적으로 인증되었습니다. 이제 비밀번호를 설정하여 회원가입을 완료해주세요.
+        </div>
+
+        <!-- 여기서 문제 발생: token은 이미 URL 경로에 있음 -->
+        <form method="POST">
+          {{ form.hidden_tag() }}
+
+          <div class="mb-3">{{ form.email.label(class="form-label") }} {{ form.email(class="form-control", readonly=True) }}</div>
+
+          <div class="mb-3">
+            {{ form.password.label(class="form-label") }} {{ form.password(class="form-control") }} {% for error in form.password.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+            <div class="form-text">비밀번호는 최소 8자 이상이어야 합니다.</div>
+          </div>
+
+          <div class="mb-3">
+            {{ form.password2.label(class="form-label") }} {{ form.password2(class="form-control") }} {% for error in form.password2.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+
+          <div class="d-grid gap-2">{{ form.submit(class="btn btn-success") }}</div>
+        </form>
+      </div>
+      <div class="card-footer text-center">
+        <div class="small">이미 계정이 있으신가요? <a href="{{ url_for('auth.login') }}">로그인</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %} {% block title %}프로필 수정 - AI Community{% endblock %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="mb-3">
+        <a href="{{ url_for('auth.profile') }}" class="text-decoration-none"> <i class="bi bi-arrow-left"></i> 프로필로 돌아가기 </a>
+      </div>
+
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">프로필 수정</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('auth.edit_profile') }}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              <label class="form-label">{{ form.email.label }}</label>
+              {{ form.email(class="form-control") }}
+              <div class="form-text">이메일 주소는 변경할 수 없습니다.</div>
+            </div>
+
+            <hr class="my-4" />
+            <h5 class="mb-3">비밀번호 변경</h5>
+
+            <div class="mb-3">
+              <label class="form-label">{{ form.current_password.label }}</label>
+              {{ form.current_password(class="form-control") }} {% for error in form.current_password.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ form.new_password.label }}</label>
+              {{ form.new_password(class="form-control") }} {% for error in form.new_password.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+              <div class="form-text">비밀번호는 최소 8자 이상이어야 합니다.</div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ form.confirm_password.label }}</label>
+              {{ form.confirm_password(class="form-control") }} {% for error in form.confirm_password.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary me-2">취소</a>
+              {{ form.submit(class="btn btn-primary") }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
