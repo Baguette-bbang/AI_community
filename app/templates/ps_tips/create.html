@@ -1,0 +1,106 @@
+{% extends "base.html" %} {% block title %}질문 등록 - AI Community{% endblock %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-10 mx-auto">
+      <div class="mb-3">
+        <a href="{{ url_for('ps_tips.index') }}" class="text-decoration-none"> <i class="bi bi-arrow-left"></i> 목록으로 돌아가기 </a>
+      </div>
+
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">PS 팁 & 정보 공유 - 질문 등록</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('ps_tips.create') }}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ form.title.label(class="form-label") }} {{ form.title(class="form-control") }} {% for error in form.title.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              {{ form.content.label(class="form-label") }} {{ form.content(class="form-control", rows=10, id="content-editor") }} {% for error in
+              form.content.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+              <div class="form-text">문제 해결 방법, 알고리즘, 코드 등을 최대한 상세히 작성해주세요.</div>
+            </div>
+
+            <!-- 익명 작성 옵션 추가 -->
+            <div class="mb-3 form-check">
+              {{ form.is_anonymous(class="form-check-input") }} {{ form.is_anonymous.label(class="form-check-label") }}
+              <div class="form-text">익명으로 작성 시 작성자 정보가 '익명'으로 표시됩니다.</div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <a href="{{ url_for('ps_tips.index') }}" class="btn btn-outline-secondary me-2">취소</a>
+              {{ form.submit(class="btn btn-primary") }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // textarea 요소 가져오기
+    const textareaElement = document.getElementById("content-editor");
+
+    // required 속성 제거 (SimpleMDE가 적용되기 전)
+    if (textareaElement) {
+      textareaElement.removeAttribute("required");
+    }
+
+    var simplemde = new SimpleMDE({
+      element: textareaElement,
+      spellChecker: false,
+      autosave: {
+        enabled: true,
+        uniqueId: "ps-tip-create",
+        delay: 1000,
+      },
+      toolbar: [
+        "bold",
+        "italic",
+        "heading",
+        "|",
+        "quote",
+        "unordered-list",
+        "ordered-list",
+        "|",
+        "link",
+        "image",
+        "code",
+        "table",
+        "|",
+        "preview",
+        "side-by-side",
+        "fullscreen",
+        "|",
+        "guide",
+      ],
+      placeholder: "문제 해결 방법, 알고리즘, 코드 등을 최대한 상세히 작성해주세요.",
+    });
+
+    // 폼 제출 이벤트 핸들러 추가
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function (e) {
+      // 폼 제출 전 유효성 검사
+      const content = simplemde.value();
+
+      if (!content || content.trim().length < 10) {
+        e.preventDefault();
+        alert("내용은 최소 10자 이상 입력해주세요.");
+        return false;
+      }
+
+      // SimpleMDE 내용을 textarea에 복사
+      textareaElement.value = content;
+    });
+  });
+</script>
+{% endblock %}
