@@ -1,0 +1,65 @@
+{% extends "base.html" %} {% block title %}홈 - AI Community{% endblock %} {% block content %}
+<div class="jumbotron p-5 mb-4 bg-light rounded-3">
+  <div class="container py-5">
+    <h1 class="display-4">AI Community에 오신 것을 환영합니다!</h1>
+    <p class="lead">AI 융합학부 학생들을 위한 커뮤니티 공간입니다.</p>
+    <hr class="my-4" />
+    <p>다양한 주제로 소통하고, 정보를 공유하며, 함께 성장해보세요.</p>
+
+    {% if not current_user.is_authenticated %}
+    <div class="mt-4">
+      <a class="btn btn-primary btn-lg me-2" href="{{ url_for('auth.verify_email_request') }}" role="button">회원가입</a>
+      <a class="btn btn-outline-primary btn-lg" href="{{ url_for('auth.login') }}" role="button">로그인</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="row mb-4">
+  <div class="col-md-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">개발 메이트</h5>
+        <p class="card-text">프로젝트 팀원을 찾고 있나요? 개발 메이트를 통해 함께할 동료를 찾아보세요.</p>
+        <a href="{{ url_for('dev_mates.index') }}" class="btn btn-outline-primary">바로가기</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">PS 팁 & 정보 공유</h5>
+        <p class="card-text">문제 해결 전략과 팁을 공유하고, 궁금한 점을 질문해보세요.</p>
+        <a href="{{ url_for('ps_tips.index') }}" class="btn btn-outline-primary">바로가기</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-4 mb-3">
+    <div class="card h-100">
+      <div class="card-body">
+        <h5 class="card-title">수강평</h5>
+        <p class="card-text">AI 융합학부 과목들에 대한 솔직한 수강평을 확인하고 공유해보세요.</p>
+        <a href="{{ url_for('courses.index') }}" class="btn btn-outline-primary">바로가기</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% if current_user.is_authenticated %}
+<div class="row">
+  <div class="col-12">
+    <div class="card border-primary">
+      <div class="card-header bg-primary text-white">
+        <h5 class="mb-0">최근 활동</h5>
+      </div>
+      <div class="card-body">
+        <p>최근 등록된 게시글과 활동을 확인해보세요!</p>
+        <!-- 여기에 최근 게시글 목록 표시 (추후 구현) -->
+        <div class="text-center mt-3">
+          <a href="{{ url_for('posts.index') }}" class="btn btn-outline-primary">전체 글 보기</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% endblock %}
