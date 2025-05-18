@@ -1,0 +1,118 @@
+{% extends "base.html" %} {% block title %}답변 수정 - AI Community{% endblock %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-10 mx-auto">
+      <div class="mb-3">
+        <a href="{{ url_for('ps_tips.view', question_id=question.id) }}" class="text-decoration-none"> <i class="bi bi-arrow-left"></i> 질문으로 돌아가기 </a>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h4 class="card-title mb-0">{{ question.title }}</h4>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">질문 작성자: {% if question.is_anonymous %} 익명 {% else %} {{ question.author.email }} {% endif %}</p>
+          <div class="post-content markdown-body">{{ question.content }}</div>
+        </div>
+      </div>
+
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">답변 수정</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('ps_tips.edit_answer', answer_id=answer.id) }}">
+            {{ form.hidden_tag() }}
+
+            <div class="mb-3">
+              {{ form.content.label(class="form-label") }} {{ form.content(class="form-control", rows=10, id="content-editor") }} {% for error in
+              form.content.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <!-- 익명 작성 옵션 추가 -->
+            <div class="mb-3 form-check">
+              {{ form.is_anonymous(class="form-check-input") }} {{ form.is_anonymous.label(class="form-check-label") }}
+              <div class="form-text">익명으로 작성 시 작성자 정보가 '익명'으로 표시됩니다.</div>
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <a href="{{ url_for('ps_tips.view', question_id=question.id) }}" class="btn btn-outline-secondary me-2">취소</a>
+              {{ form.submit(class="btn btn-primary") }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // 질문 내용 마크다운 렌더링
+    const postContent = document.querySelector(".post-content");
+    if (postContent) {
+      marked.setOptions({
+        sanitize: true,
+      });
+      const rawContent = postContent.innerHTML;
+      postContent.innerHTML = marked(rawContent);
+    }
+
+    // textarea 요소 가져오기
+    const textareaElement = document.getElementById("content-editor");
+
+    // required 속성 제거 (SimpleMDE가 적용되기 전)
+    if (textareaElement) {
+      textareaElement.removeAttribute("required");
+    }
+
+    // 답변 에디터 초기화
+    var simplemde = new SimpleMDE({
+      element: textareaElement,
+      spellChecker: false,
+      autosave: {
+        enabled: true,
+        uniqueId: "ps-tip-answer-edit-{{ answer.id }}",
+        delay: 1000,
+      },
+      toolbar: [
+        "bold",
+        "italic",
+        "heading",
+        "|",
+        "quote",
+        "unordered-list",
+        "ordered-list",
+        "|",
+        "link",
+        "code",
+        "table",
+        "|",
+        "preview",
+        "side-by-side",
+        "fullscreen",
+        "|",
+        "guide",
+      ],
+    });
+
+    // 폼 제출 이벤트 핸들러 추가
+    const form = document.querySelector("form");
+    form.addEventListener("submit", function (e) {
+      // 폼 제출 전 유효성 검사
+      const content = simplemde.value();
+
+      if (!content || content.trim().length < 10) {
+        e.preventDefault();
+        alert("답변은 최소 10자 이상 입력해주세요.");
+        return false;
+      }
+
+      // SimpleMDE 내용을 textarea에 복사
+      textareaElement.value = content;
+    });
+  });
+</script>
+{% endblock %}
