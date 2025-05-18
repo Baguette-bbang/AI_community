@@ -1,0 +1,61 @@
+{% extends "base.html" %} {% block title %}소개 - AI Community{% endblock %} {% block content %}
+<div class="container py-4">
+  <div class="row">
+    <div class="col-lg-8 mx-auto">
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h2 class="mb-0">AI Community 소개</h2>
+        </div>
+        <div class="card-body">
+          <h4 class="mb-3">AI 융합학부 학생들을 위한 커뮤니티</h4>
+          <p class="lead mb-4">AI Community는 AI 융합학부 학생들이 서로 소통하고, 정보를 공유하며, 함께 성장할 수 있는 공간입니다.</p>
+
+          <h5 class="mt-4 mb-3">주요 기능</h5>
+          <ul class="list-group mb-4">
+            <li class="list-group-item d-flex">
+              <div class="me-3 text-primary">
+                <i class="bi bi-people-fill fs-4"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">개발 메이트</h6>
+                <p class="mb-0">
+                  프로젝트 팀원을 찾고, 함께 개발할 동료를 만나는 공간입니다. 작성자만 볼 수 있는 비공개 댓글 기능을 통해 안전하게 소통할 수 있습니다.
+                </p>
+              </div>
+            </li>
+            <li class="list-group-item d-flex">
+              <div class="me-3 text-primary">
+                <i class="bi bi-lightbulb-fill fs-4"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">PS 팁 & 정보 공유</h6>
+                <p class="mb-0">문제 해결 전략과 팁을 공유하고, 궁금한 점을 질문하고 답변받을 수 있는 Q&A 공간입니다.</p>
+              </div>
+            </li>
+            <li class="list-group-item d-flex">
+              <div class="me-3 text-primary">
+                <i class="bi bi-star-fill fs-4"></i>
+              </div>
+              <div>
+                <h6 class="mb-1">수강평</h6>
+                <p class="mb-0">AI 융합학부 과목들에 대한 솔직한 수강평과 별점을 확인하고 공유할 수 있는 공간입니다.</p>
+              </div>
+            </li>
+          </ul>
+
+          <h5 class="mt-4 mb-3">이용 안내</h5>
+          <p>AI Community는 AI 융합학부 학생들만 이용할 수 있습니다. 회원가입 시 학교 이메일(@example.edu)을 통한 인증이 필요합니다.</p>
+
+          <div class="alert alert-info mt-4">
+            <h6 class="alert-heading">함께 성장하는 커뮤니티를 만들어요!</h6>
+            <p class="mb-0">궁금한 점이나 제안사항이 있으시면 언제든지 알려주세요. 더 나은 커뮤니티를 만들기 위해 노력하겠습니다.</p>
+          </div>
+        </div>
+        <div class="card-footer text-center">
+          <a href="{{ url_for('main.index') }}" class="btn btn-primary">홈으로 돌아가기</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

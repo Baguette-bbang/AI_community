@@ -1,0 +1,102 @@
+{% extends "base.html" %} {% block title %}수강평 - AI Community{% endblock %} {% block content %}
+<div class="container">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="mb-0">AI 융합학부 과목 수강평</h1>
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <a href="{{ url_for('courses.create_course') }}" class="btn btn-primary"> <i class="bi bi-plus-lg me-1"></i> 과목 추가 </a>
+    {% endif %}
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-body">
+      <form method="GET" action="{{ url_for('courses.index') }}" class="row g-3">
+        <div class="col-md-10">
+          <input type="text" name="search" value="{{ search }}" class="form-control" placeholder="과목명, 과목 코드, 또는 담당 교수 검색" />
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn btn-primary w-100">검색</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  {% if courses %}
+  <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+    {% for course in courses %}
+    <div class="col">
+      <div class="card h-100 hover-shadow">
+        <div class="card-body">
+          <h5 class="card-title">{{ course.name }}</h5>
+          <h6 class="card-subtitle mb-2 text-muted">{{ course.code }}</h6>
+          <p class="card-text"><small>담당 교수: {{ course.instructor }}</small></p>
+
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <div class="ratings">
+              {% for i in range(5) %} {% if i < course.avg_rating_value|int %}
+              <i class="bi bi-star-fill text-warning"></i>
+              {% elif i < course.avg_rating_value|round(0, 'ceil')|int and course.avg_rating_value|int != course.avg_rating_value|round(0, 'ceil')|int %}
+              <i class="bi bi-star-half text-warning"></i>
+              {% else %}
+              <i class="bi bi-star text-warning"></i>
+              {% endif %} {% endfor %}
+              <span class="ms-1">{{ course.avg_rating_value|round(1) }}</span>
+            </div>
+            <span class="badge bg-secondary">수강평 {{ course.review_count_value }}개</span>
+          </div>
+
+          <a href="{{ url_for('courses.view', course_id=course.id) }}" class="btn btn-outline-primary w-100 mt-2">수강평 보기</a>
+        </div>
+        {% if current_user.is_authenticated and current_user.is_admin %}
+        <div class="card-footer bg-white d-flex justify-content-end">
+          <a href="{{ url_for('courses.edit_course', course_id=course.id) }}" class="btn btn-sm btn-outline-primary me-2">수정</a>
+          <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCourseModal{{ course.id }}">삭제</button>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <!-- 과목 삭제 확인 모달 -->
+    <div class="modal fade" id="deleteCourseModal{{ course.id }}" tabindex="-1" aria-labelledby="deleteCourseModalLabel{{ course.id }}" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="deleteCourseModalLabel{{ course.id }}">과목 삭제 확인</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            정말 <strong>{{ course.name }} ({{ course.code }})</strong> 과목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없으며, 모든 수강평도 함께 삭제됩니다.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+            <form method="POST" action="{{ url_for('courses.delete_course', course_id=course.id) }}">
+              <button type="submit" class="btn btn-danger">삭제</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endif %} {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center my-5 py-5">
+    {% if search %}
+    <h5 class="text-muted">검색어 "{{ search }}"에 맞는 과목이 없습니다.</h5>
+    <a href="{{ url_for('courses.index') }}" class="btn btn-primary mt-3">모든 과목 보기</a>
+    {% else %}
+    <h5 class="text-muted">등록된 과목이 없습니다.</h5>
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <a href="{{ url_for('courses.create_course') }}" class="btn btn-primary mt-3">첫 과목 등록하기</a>
+    {% endif %} {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %} {% block styles %}
+<style>
+  .hover-shadow:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+  }
+</style>
+{% endblock %}

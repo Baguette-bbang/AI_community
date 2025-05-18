@@ -1,0 +1,185 @@
+{% extends "base.html" %} {% block title %}내 프로필 - AI Community{% endblock %} {% block content %}
+<div class="container">
+  <div class="row mb-4">
+    <div class="col-md-12">
+      <div class="card">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">프로필 정보</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-2 text-center mb-3 mb-md-0">
+              <div class="avatar avatar-lg mb-3">
+                <span class="avatar-text rounded-circle bg-primary text-white"> {{ user.email[0]|upper }} </span>
+              </div>
+            </div>
+            <div class="col-md-10">
+              <h5>{{ user.email }}</h5>
+              <p><strong>가입일:</strong> {{ user.created_at.strftime('%Y년 %m월 %d일') }}</p>
+              {% if user.is_admin %}
+              <span class="badge bg-danger">관리자</span>
+              {% endif %}
+              <div class="mt-3">
+                <a href="{{ url_for('auth.edit_profile') }}" class="btn btn-sm btn-primary">프로필 수정</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-md-12">
+      <ul class="nav nav-tabs mb-4" id="activityTab" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="dev-mates-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#dev-mates"
+            type="button"
+            role="tab"
+            aria-controls="dev-mates"
+            aria-selected="true"
+          >
+            개발 메이트 <span class="badge bg-secondary">{{ dev_mate_posts|length }}</span>
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="ps-tips-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#ps-tips"
+            type="button"
+            role="tab"
+            aria-controls="ps-tips"
+            aria-selected="false"
+          >
+            PS 팁 <span class="badge bg-secondary">{{ ps_tip_questions|length + ps_tip_answers|length }}</span>
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="reviews-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#reviews"
+            type="button"
+            role="tab"
+            aria-controls="reviews"
+            aria-selected="false"
+          >
+            수강평 <span class="badge bg-secondary">{{ course_reviews|length }}</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="tab-content" id="activityTabContent">
+        <!-- 개발 메이트 탭 -->
+        <div class="tab-pane fade show active" id="dev-mates" role="tabpanel" aria-labelledby="dev-mates-tab">
+          {% if dev_mate_posts %}
+          <div class="list-group">
+            {% for post in dev_mate_posts %}
+            <a href="{{ url_for('dev_mates.view', post_id=post.id) }}" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ post.title }}</h5>
+                <small>{{ post.created_at.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <p class="mb-1 text-truncate">{{ post.content }}</p>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="alert alert-info">작성한 개발 메이트 게시글이 없습니다.</div>
+          {% endif %}
+        </div>
+
+        <!-- PS 팁 탭 -->
+        <div class="tab-pane fade" id="ps-tips" role="tabpanel" aria-labelledby="ps-tips-tab">
+          {% if ps_tip_questions or ps_tip_answers %} {% if ps_tip_questions %}
+          <h5 class="mb-3">내가 작성한 질문</h5>
+          <div class="list-group mb-4">
+            {% for question in ps_tip_questions %}
+            <a href="{{ url_for('ps_tips.view', question_id=question.id) }}" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ question.title }}</h5>
+                <small>{{ question.created_at.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <p class="mb-1 text-truncate">{{ question.content }}</p>
+            </a>
+            {% endfor %}
+          </div>
+          {% endif %} {% if ps_tip_answers %}
+          <h5 class="mb-3">내가 작성한 답변</h5>
+          <div class="list-group">
+            {% for answer in ps_tip_answers %}
+            <a href="{{ url_for('ps_tips.view', question_id=answer.question_id) }}" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ answer.question.title }}</h5>
+                <small>{{ answer.created_at.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <p class="mb-1 text-truncate">{{ answer.content }}</p>
+              {% if answer.is_accepted %}
+              <span class="badge bg-success">채택됨</span>
+              {% endif %}
+            </a>
+            {% endfor %}
+          </div>
+          {% endif %} {% else %}
+          <div class="alert alert-info">작성한 PS 팁 질문이나 답변이 없습니다.</div>
+          {% endif %}
+        </div>
+
+        <!-- 수강평 탭 -->
+        <div class="tab-pane fade" id="reviews" role="tabpanel" aria-labelledby="reviews-tab">
+          {% if course_reviews %}
+          <div class="list-group">
+            {% for review in course_reviews %}
+            <a href="{{ url_for('courses.view', course_id=review.course_id) }}" class="list-group-item list-group-item-action">
+              <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ review.course.name }} ({{ review.course.code }})</h5>
+                <small>{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+              </div>
+              <div class="mb-2">
+                {% for i in range(5) %} {% if i < review.rating %}
+                <i class="bi bi-star-fill text-warning"></i>
+                {% else %}
+                <i class="bi bi-star text-warning"></i>
+                {% endif %} {% endfor %}
+                <small class="ms-2">{{ review.semester }} 수강</small>
+              </div>
+              <p class="mb-1 text-truncate">{{ review.content }}</p>
+            </a>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="alert alert-info">작성한 수강평이 없습니다.</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block styles %}
+<style>
+  .avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+  }
+
+  .avatar-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-size: 36px;
+    font-weight: bold;
+  }
+</style>
+{% endblock %}
