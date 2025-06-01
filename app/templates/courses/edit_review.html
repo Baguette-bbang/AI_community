@@ -1,0 +1,98 @@
+{% extends "base.html" %} {% block title %}수강평 수정 - AI Community{% endblock %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-10 mx-auto">
+      <div class="mb-3">
+        <a href="{{ url_for('courses.view', course_id=course.id) }}" class="text-decoration-none"> <i class="bi bi-arrow-left"></i> 과목으로 돌아가기 </a>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header bg-light">
+          <h4 class="card-title mb-0">{{ course.name }} ({{ course.code }})</h4>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">담당 교수: {{ course.instructor }}</p>
+        </div>
+      </div>
+
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">수강평 수정</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('courses.edit_review', review_id=review.id) }}">
+            {{ form.hidden_tag() }}
+
+            <div class="row mb-3">
+              <div class="col-md-6">
+                <label class="form-label">{{ form.rating.label }}</label>
+                {{ form.rating(class="form-select") }} {% for error in form.rating.errors %}
+                <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">{{ form.semester.label }}</label>
+                {{ form.semester(class="form-control", placeholder="예: 2023-1") }} {% for error in form.semester.errors %}
+                <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ form.content.label }}</label>
+              {{ form.content(class="form-control", rows=5, id="review-editor", placeholder="강의 내용, 과제량, 시험 난이도 등 도움이 될 만한 정보를
+              공유해주세요.") }} {% for error in form.content.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <a href="{{ url_for('courses.view', course_id=course.id) }}" class="btn btn-outline-secondary me-2">취소</a>
+              {{ form.submit(class="btn btn-primary") }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // textarea 요소 가져오기
+    const textareaElement = document.getElementById("review-editor");
+
+    // required 속성 제거 (SimpleMDE가 적용되기 전)
+    if (textareaElement) {
+      textareaElement.removeAttribute("required");
+    }
+
+    // 수강평 에디터 초기화
+    var simplemde;
+    if (textareaElement) {
+      simplemde = new SimpleMDE({
+        element: textareaElement,
+        spellChecker: false,
+        toolbar: ["bold", "italic", "|", "unordered-list", "ordered-list", "|", "link", "preview"],
+        placeholder: "강의 내용, 과제량, 시험 난이도 등 도움이 될 만한 정보를 공유해주세요.",
+      });
+
+      // 폼 제출 이벤트 핸들러
+      const form = document.querySelector("form");
+      form.addEventListener("submit", function (e) {
+        // 폼 제출 전 유효성 검사
+        const content = simplemde.value();
+
+        if (!content || content.trim().length < 10) {
+          e.preventDefault();
+          alert("수강평은 최소 10자 이상 입력해주세요.");
+          return false;
+        }
+
+        // SimpleMDE 내용을 textarea에 복사
+        textareaElement.value = content;
+      });
+    }
+  });
+</script>
+{% endblock %}

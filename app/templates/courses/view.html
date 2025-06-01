@@ -1,0 +1,393 @@
+{% extends "base.html" %} {% block title %}{{ course.name }} - 수강평 - AI Community{% endblock %} {% block styles %} {{ super() }}
+<style>
+  /* 모달 관련 스타일 */
+  .modal-backdrop {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+  }
+
+  .modal-open {
+    padding-right: 0 !important;
+    overflow-y: auto !important;
+  }
+
+  .modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 3.5rem);
+  }
+
+  /* 마크다운 스타일 강화 */
+  .review-content {
+    line-height: 1.5;
+    word-wrap: break-word;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+
+  .review-content strong,
+  .review-content b {
+    font-weight: bold;
+  }
+
+  .review-content em,
+  .review-content i {
+    font-style: italic;
+  }
+
+  .review-content h1,
+  .review-content h2,
+  .review-content h3,
+  .review-content h4,
+  .review-content h5,
+  .review-content h6 {
+    margin-top: 24px;
+    margin-bottom: 16px;
+    font-weight: 600;
+    line-height: 1.25;
+  }
+
+  .review-content h1 {
+    font-size: 2em;
+  }
+
+  .review-content h2 {
+    font-size: 1.5em;
+  }
+
+  .review-content h3 {
+    font-size: 1.25em;
+  }
+
+  .review-content code {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    background-color: rgba(175, 184, 193, 0.2);
+    border-radius: 6px;
+    padding: 0.2em 0.4em;
+    font-size: 85%;
+  }
+
+  .review-content pre {
+    background-color: #f6f8fa;
+    border-radius: 6px;
+    padding: 16px;
+    overflow: auto;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 85%;
+    line-height: 1.45;
+    margin-bottom: 16px;
+  }
+
+  .review-content pre code {
+    background-color: transparent;
+    padding: 0;
+    margin: 0;
+  }
+
+  .review-content blockquote {
+    padding: 0 1em;
+    color: #6a737d;
+    border-left: 0.25em solid #dfe2e5;
+    margin-bottom: 16px;
+  }
+
+  .review-content ul,
+  .review-content ol {
+    padding-left: 2em;
+    margin-bottom: 16px;
+  }
+
+  .review-content img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  .review-content a {
+    color: #0366d6;
+    text-decoration: none;
+  }
+
+  .review-content a:hover {
+    text-decoration: underline;
+  }
+
+  .review-content hr {
+    height: 0.25em;
+    padding: 0;
+    margin: 24px 0;
+    background-color: #e1e4e8;
+    border: 0;
+  }
+</style>
+{% endblock %} {% block content %}
+<div class="container">
+  <div class="mb-3">
+    <a href="{{ url_for('courses.index') }}" class="text-decoration-none"> <i class="bi bi-arrow-left"></i> 목록으로 돌아가기 </a>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header bg-light">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="card-title mb-0">{{ course.name }}</h2>
+        <span class="badge bg-primary">{{ course.code }}</span>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-4">
+          <h5>과목 정보</h5>
+          <p><strong>담당 교수:</strong> {{ course.instructor }}</p>
+          {% if course.description %}
+          <p><strong>과목 설명:</strong> {{ course.description }}</p>
+          {% endif %}
+        </div>
+        <div class="col-md-8">
+          <h5>평점 요약</h5>
+          <div class="d-flex align-items-center mb-3">
+            <div class="display-4 me-3">{{ course.avg_rating|round(1) }}</div>
+            <div>
+              <div class="ratings fs-4">
+                {% for i in range(5) %} {% if i < course.avg_rating|int %}
+                <i class="bi bi-star-fill text-warning"></i>
+                {% elif i < course.avg_rating|round(0, 'ceil')|int and course.avg_rating|int != course.avg_rating|round(0, 'ceil')|int %}
+                <i class="bi bi-star-half text-warning"></i>
+                {% else %}
+                <i class="bi bi-star text-warning"></i>
+                {% endif %} {% endfor %}
+              </div>
+              <div class="text-muted">{{ course.review_count }}개의 수강평</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% if current_user.is_authenticated and current_user.is_admin %}
+    <div class="card-footer bg-white d-flex justify-content-end">
+      <a href="{{ url_for('courses.edit_course', course_id=course.id) }}" class="btn btn-outline-primary me-2">과목 정보 수정</a>
+      <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteCourseModal">삭제</button>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 수강평 작성 섹션 -->
+  {% if current_user.is_authenticated and not user_review %}
+  <div class="card mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">수강평 작성</h5>
+    </div>
+    <div class="card-body">
+      <form method="POST" action="{{ url_for('courses.add_review', course_id=course.id) }}">
+        {{ form.hidden_tag() }}
+
+        <div class="row mb-3">
+          <div class="col-md-6">
+            <label class="form-label">{{ form.rating.label }}</label>
+            {{ form.rating(class="form-select") }} {% for error in form.rating.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+          <div class="col-md-6">
+            <label class="form-label">{{ form.semester.label }}</label>
+            {{ form.semester(class="form-control", placeholder="예: 2023-1") }} {% for error in form.semester.errors %}
+            <div class="text-danger small">{{ error }}</div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label class="form-label">{{ form.content.label }}</label>
+          {{ form.content(class="form-control", rows=5, id="review-editor", placeholder="강의 내용, 과제량, 시험 난이도 등 도움이 될 만한 정보를 공유해주세요.")
+          }} {% for error in form.content.errors %}
+          <div class="text-danger small">{{ error }}</div>
+          {% endfor %}
+        </div>
+
+        <div class="d-flex justify-content-end">{{ form.submit(class="btn btn-primary") }}</div>
+      </form>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- 수강평 목록 -->
+  <div class="card mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">수강평 <span class="badge bg-secondary">{{ reviews|length }}</span></h5>
+    </div>
+    <div class="card-body">
+      {% if reviews %}
+      <div class="review-list">
+        {% for review in reviews %}
+        <div class="card mb-3 {% if review.user_id == current_user.id %}border-primary{% endif %}">
+          <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <div>
+                <div class="ratings">
+                  {% for i in range(5) %} {% if i < review.rating %}
+                  <i class="bi bi-star-fill text-warning"></i>
+                  {% else %}
+                  <i class="bi bi-star text-warning"></i>
+                  {% endif %} {% endfor %}
+                </div>
+                <small class="text-muted">{{ review.semester }} 수강</small>
+              </div>
+              <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+            </div>
+            <!-- 수강평 내용 부분 수정 -->
+            <div class="review-content" id="review-content-{{ review.id }}" data-raw-content="{{ review.content }}">
+              <!-- 원본 내용은 스크립트로 렌더링됨 -->
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-3">
+              <small class="text-muted">작성자: {{ review.author.email }}</small>
+
+              {% if current_user.is_authenticated and current_user.id == review.user_id %}
+              <div>
+                <a href="{{ url_for('courses.edit_review', review_id=review.id) }}" class="btn btn-sm btn-outline-primary me-2">수정</a>
+                <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteReviewModal{{ review.id }}">
+                  삭제
+                </button>
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-4">
+        <p class="text-muted mb-0">아직 등록된 수강평이 없습니다. 첫 수강평을 작성해보세요!</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- 모달 컨테이너 - 페이지 최하단에 모든 모달 배치 -->
+<div id="modalsContainer">
+  <!-- 수강평 삭제 확인 모달들 -->
+  {% for review in reviews %} {% if current_user.is_authenticated and current_user.id == review.user_id %}
+  <div class="modal fade" id="deleteReviewModal{{ review.id }}" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteReviewModalLabel{{ review.id }}">수강평 삭제 확인</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">정말 이 수강평을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.</div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <form method="POST" action="{{ url_for('courses.delete_review', review_id=review.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-danger">삭제</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %} {% endfor %}
+
+  <!-- 과목 삭제 확인 모달 -->
+  {% if current_user.is_authenticated and current_user.is_admin %}
+  <div class="modal fade" id="deleteCourseModal" tabindex="-1" aria-labelledby="deleteCourseModalLabel">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteCourseModalLabel">과목 삭제 확인</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          정말 <strong>{{ course.name }} ({{ course.code }})</strong> 과목을 삭제하시겠습니까? 이 작업은 되돌릴 수 없으며, 모든 수강평도 함께 삭제됩니다.
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+          <form method="POST" action="{{ url_for('courses.delete_course', course_id=course.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <button type="submit" class="btn btn-danger">삭제</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
+</div>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // 모달이 열릴 때 실행할 코드
+    const modals = document.querySelectorAll(".modal");
+    modals.forEach(function (modal) {
+      modal.addEventListener("show.bs.modal", function () {
+        // body에 추가되는 padding-right 제거
+        document.body.style.paddingRight = "0px";
+      });
+
+      // aria-hidden 속성 제거 (접근성 문제 해결)
+      modal.addEventListener("shown.bs.modal", function () {
+        setTimeout(function () {
+          modal.removeAttribute("aria-hidden");
+        }, 100);
+      });
+    });
+
+    // 수강평 작성 에디터 초기화 (SimpleMDE가 있다고 가정)
+    if (document.getElementById("review-editor")) {
+      var simplemde = new SimpleMDE({
+        element: document.getElementById("review-editor"),
+        spellChecker: false,
+        toolbar: ["bold", "italic", "|", "unordered-list", "ordered-list", "|", "link", "preview"],
+        placeholder: "강의 내용, 과제량, 시험 난이도 등 도움이 될 만한 정보를 공유해주세요.",
+      });
+    }
+
+    // 마크다운 파서 설정 강화
+    marked.setOptions({
+      breaks: true, // 줄바꿈 활성화
+      gfm: true, // GitHub Flavored Markdown 사용
+      headerIds: true, // 헤더 ID 생성
+      mangle: false, // 링크 및 헤더 내용 변경 비활성화
+      smartLists: true, // 스마트 목록
+      smartypants: false, // 스마트 구두점 비활성화
+      xhtml: false, // XHTML 출력 비활성화
+      highlight: function (code, lang) {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return hljs.highlight(code, { language: lang }).value;
+          } catch (e) {
+            console.error("Highlight error:", e);
+          }
+        }
+        return hljs.highlightAuto(code).value;
+      },
+    });
+
+    // 각 수강평 마크다운 렌더링
+    document.querySelectorAll(".review-content").forEach(function (element) {
+      try {
+        // data-raw-content 속성에서 원본 마크다운 텍스트 가져오기
+        const rawMarkdown = element.getAttribute("data-raw-content");
+        console.log("원본 마크다운:", rawMarkdown);
+
+        // 마크다운 변환
+        const renderedHTML = marked.parse(rawMarkdown);
+        console.log("렌더링된 HTML:", renderedHTML);
+
+        // HTML 설정
+        element.innerHTML = renderedHTML;
+
+        // 코드 블록 하이라이팅
+        element.querySelectorAll("pre code").forEach((block) => {
+          hljs.highlightElement(block);
+        });
+
+        console.log("마크다운 렌더링 완료:", element.id);
+      } catch (error) {
+        console.error("마크다운 렌더링 오류:", error, element.id);
+        // 오류 발생 시 원본 텍스트를 줄바꿈만 처리하여 표시
+        const rawText = element.getAttribute("data-raw-content");
+        element.innerHTML = rawText.replace(/\n/g, "<br>");
+      }
+    });
+  });
+</script>
+{% endblock %}

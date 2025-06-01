@@ -1,0 +1,57 @@
+{% extends "base.html" %} {% block title %}과목 수정 - AI Community{% endblock %} {% block content %}
+<div class="container">
+  <div class="row">
+    <div class="col-lg-10 mx-auto">
+      <div class="mb-3">
+        <a href="{{ url_for('courses.view', course_id=course.id) }}" class="text-decoration-none"> <i class="bi bi-arrow-left"></i> 과목으로 돌아가기 </a>
+      </div>
+
+      <div class="card shadow">
+        <div class="card-header bg-primary text-white">
+          <h4 class="mb-0">과목 수정</h4>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('courses.edit_course', course_id=course.id) }}">
+            {{ form.hidden_tag() }}
+
+            <div class="row mb-3">
+              <div class="col-md-4">
+                <label class="form-label">{{ form.code.label }}</label>
+                {{ form.code(class="form-control", placeholder="예: AI1001") }} {% for error in form.code.errors %}
+                <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+              <div class="col-md-8">
+                <label class="form-label">{{ form.name.label }}</label>
+                {{ form.name(class="form-control", placeholder="예: 인공지능 개론") }} {% for error in form.name.errors %}
+                <div class="text-danger small">{{ error }}</div>
+                {% endfor %}
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ form.instructor.label }}</label>
+              {{ form.instructor(class="form-control", placeholder="예: 홍길동 교수") }} {% for error in form.instructor.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label">{{ form.description.label }}</label>
+              {{ form.description(class="form-control", rows=5, placeholder="과목에 대한 설명을 입력하세요 (선택사항)") }} {% for error in
+              form.description.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+
+            <div class="d-flex justify-content-end">
+              <a href="{{ url_for('courses.view', course_id=course.id) }}" class="btn btn-outline-secondary me-2">취소</a>
+              {{ form.submit(class="btn btn-primary") }}
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

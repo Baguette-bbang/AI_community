@@ -1,0 +1,91 @@
+/* 기본 스타일 */
+body {
+  font-family: "Noto Sans KR", sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+main {
+  flex: 1;
+}
+
+footer {
+  margin-top: auto;
+}
+
+/* 카드 스타일 */
+.card {
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* 버튼 스타일 */
+.btn {
+  border-radius: 4px;
+}
+
+/* 폼 스타일 */
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* 알림 메시지 스타일 */
+.alert {
+  border-radius: 4px;
+}
+
+/* 반응형 조정 */
+@media (max-width: 768px) {
+  .jumbotron {
+    padding: 2rem 1rem;
+  }
+}
+
+/* 댓글 스타일 개선 */
+.comment {
+  border-left: 4px solid #007bff;
+  background-color: #f8f9fa;
+  transition: transform 0.2s ease;
+}
+
+.comment:hover {
+  transform: translateX(5px);
+  border-left-color: #0056b3;
+}
+
+.comment .card-subtitle {
+  font-size: 0.95rem;
+}
+
+.comment hr {
+  margin: 0.5rem 0;
+  border-color: rgba(0, 123, 255, 0.2);
+}
+
+.anonymous-post {
+  border-left: 3px solid #6c757d !important;
+}
+
+.anonymous-comment {
+  background-color: #f8f9fa;
+}
+
+.anonymous-badge {
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+  border-radius: 3px;
+  color: #6c757d;
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  margin-left: 5px;
+}

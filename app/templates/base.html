@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}AI Community{% endblock %}</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <!-- SimpleMDE CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.css" />
+    <!-- SimpleMDE JS -->
+    <script src="https://cdn.jsdelivr.net/simplemde/latest/simplemde.min.js"></script>
+    <!-- Marked.js - 마크다운 파서 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.3.0/marked.min.js"></script>
+    <!-- highlight.js - 코드 하이라이팅 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+    <!-- 마크다운 스타일 -->
+    <style>
+      .markdown-body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+        font-size: 16px;
+        line-height: 1.5;
+        word-wrap: break-word;
+      }
+
+      .markdown-body pre {
+        background-color: #f6f8fa;
+        border-radius: 6px;
+        padding: 16px;
+        overflow: auto;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 85%;
+        line-height: 1.45;
+        margin-bottom: 16px;
+      }
+
+      .markdown-body pre code {
+        background-color: transparent;
+        padding: 0;
+        margin: 0;
+        font-size: inherit;
+        white-space: pre;
+        word-break: normal;
+        overflow-wrap: normal;
+      }
+
+      .markdown-body code {
+        background-color: rgba(175, 184, 193, 0.2);
+        border-radius: 6px;
+        padding: 0.2em 0.4em;
+        font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+        font-size: 85%;
+      }
+
+      .markdown-body h1,
+      .markdown-body h2,
+      .markdown-body h3,
+      .markdown-body h4,
+      .markdown-body h5,
+      .markdown-body h6 {
+        margin-top: 24px;
+        margin-bottom: 16px;
+        font-weight: 600;
+        line-height: 1.25;
+      }
+
+      .markdown-body h1 {
+        font-size: 2em;
+      }
+      .markdown-body h2 {
+        font-size: 1.5em;
+      }
+      .markdown-body h3 {
+        font-size: 1.25em;
+      }
+
+      .markdown-body blockquote {
+        padding: 0 1em;
+        color: #6a737d;
+        border-left: 0.25em solid #dfe2e5;
+        margin-bottom: 16px;
+      }
+
+      /* 익명 게시글/댓글 스타일 */
+      .anonymous-post {
+        border-left: 3px solid #6c757d !important;
+      }
+
+      .anonymous-comment {
+        background-color: #f8f9fa;
+      }
+
+      .anonymous-badge {
+        background-color: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 3px;
+        color: #6c757d;
+        padding: 2px 6px;
+        font-size: 0.75rem;
+        margin-left: 5px;
+      }
+    </style>
+
+    {% block styles %}{% endblock %}
+  </head>
+  <body>
+    <!-- 네비게이션 바 -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container">
+        <a class="navbar-brand" href="{{ url_for('main.index') }}">AI Community</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav me-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('main.index') }}">홈</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('posts.index') }}">전체 글</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('dev_mates.index') }}">개발 메이트</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('ps_tips.index') }}">PS 팁</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('courses.index') }}">수강평</a>
+            </li>
+          </ul>
+          <ul class="navbar-nav">
+            {% if current_user.is_authenticated %}
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                {{ current_user.email }}
+              </a>
+              <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">프로필</a></li>
+                <li><hr class="dropdown-divider" /></li>
+                <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">로그아웃</a></li>
+              </ul>
+            </li>
+            {% else %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('auth.login') }}">로그인</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('auth.verify_email_request') }}">회원가입</a>
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 메인 컨텐츠 -->
+    <main class="container my-4">
+      <!-- 플래시 메시지 -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if messages %} {% for category, message in messages %}
+      <div class="alert alert-{{ category if category != 'message' else 'info' }} alert-dismissible fade show" role="alert">
+        {{ message }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+
+      <!-- 페이지 내용 -->
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- 푸터 -->
+    <footer class="bg-dark text-light py-4 mt-5">
+      <div class="container">
+        <div class="row">
+          <div class="col-md-6">
+            <h5>AI Community</h5>
+            <p>AI 융합학부 학생들을 위한 커뮤니티 플랫폼</p>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <p>&copy; 2025 AI Community. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+
+    <!-- 마크다운 공통 스크립트 -->
+    <script>
+      // 마크다운 초기 설정
+      document.addEventListener("DOMContentLoaded", function () {
+        // 마크다운 설정
+        marked.setOptions({
+          breaks: true, // 줄바꿈 허용
+          gfm: true, // GitHub Flavored Markdown 사용
+          headerIds: false, // 헤더 ID 자동 생성 비활성화
+          mangle: false, // 링크 및 헤더 내 내용 변경 비활성화
+          sanitize: false, // HTML 허용 (XSS 주의) - 최신 버전에서는 deprecate됨
+          smartLists: true, // 스마트 목록 설정
+          smartypants: false, // 스마트 구두점 비활성화
+          xhtml: false, // XHTML 출력 비활성화
+          highlight: function (code, language) {
+            if (language && hljs.getLanguage(language)) {
+              try {
+                return hljs.highlight(code, { language: language }).value;
+              } catch (e) {
+                console.error(e);
+              }
+            }
+            return hljs.highlightAuto(code).value;
+          },
+        });
+
+        // 모든 마크다운 내용 렌더링
+        renderAllMarkdown();
+      });
+
+      // 모든 마크다운 내용 렌더링 함수
+      function renderAllMarkdown() {
+        // 마크다운 클래스가 있는 모든 요소를 렌더링
+        document.querySelectorAll(".markdown-body").forEach(function (element) {
+          renderMarkdown(element);
+        });
+      }
+
+      // 단일 요소의 마크다운 렌더링 함수
+      function renderMarkdown(element) {
+        try {
+          // 원본 텍스트 내용 가져오기
+          const originalContent = element.textContent || element.innerText;
+          console.log("렌더링 전 내용:", originalContent); // 디버그 로그
+
+          // 마크다운으로 변환
+          const renderedContent = marked.parse(originalContent);
+          element.innerHTML = renderedContent;
+
+          console.log("렌더링 후 내용:", renderedContent); // 디버그 로그
+
+          // 코드 블록 하이라이팅
+          element.querySelectorAll("pre code").forEach((block) => {
+            hljs.highlightElement(block);
+          });
+        } catch (e) {
+          console.error("마크다운 렌더링 오류:", e, element);
+        }
+      }
+    </script>
+
+    {% block scripts %}{% endblock %}
+  </body>
+</html>

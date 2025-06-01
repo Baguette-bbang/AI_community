@@ -1,0 +1,222 @@
+{% extends "base.html" %} {% block title %}{{ question.title }} - AI Community{% endblock %} {% block content %}
+<div class="container">
+  <div class="mb-3">
+    <a href="{{ url_for('ps_tips.index') }}" class="text-decoration-none"> <i class="bi bi-arrow-left"></i> 목록으로 돌아가기 </a>
+  </div>
+
+  <div class="card mb-4 {% if question.is_anonymous %}anonymous-post{% endif %}">
+    <div class="card-header bg-light">
+      <div class="d-flex justify-content-between align-items-center">
+        <h2 class="card-title mb-0">{{ question.title }}</h2>
+        {% if question.answers.filter_by(is_accepted=True).count() > 0 %}
+        <span class="badge bg-success">해결됨</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="d-flex justify-content-between mb-3">
+        <div>
+          <span class="text-muted"> {% if question.is_anonymous %} 작성자: 익명 {% else %} 작성자: {{ question.author.email }} {% endif %} </span>
+        </div>
+        <div>
+          <span class="text-muted">{{ question.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+          {% if question.updated_at != question.created_at %}
+          <span class="text-muted">(수정됨: {{ question.updated_at.strftime('%Y-%m-%d %H:%M') }})</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="post-content markdown-body">{{ question.content }}</div>
+    </div>
+    {% if current_user.is_authenticated and current_user.id == question.user_id %}
+    <div class="card-footer bg-white d-flex justify-content-end">
+      <a href="{{ url_for('ps_tips.edit', question_id=question.id) }}" class="btn btn-outline-primary me-2">수정</a>
+      <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteQuestionModal">삭제</button>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 답변 섹션 -->
+  <div class="card mb-4">
+    <div class="card-header bg-light">
+      <h5 class="mb-0">답변 <span class="badge bg-secondary">{{ answers|length }}</span></h5>
+    </div>
+    <div class="card-body">
+      {% if answers %}
+      <div class="answer-list">
+        {% for answer in answers %}
+        <div class="answer card mb-3 {% if answer.is_accepted %}border-success{% endif %} {% if answer.is_anonymous %}anonymous-comment{% endif %}">
+          <div class="card-body py-3">
+            {% if answer.is_accepted %}
+            <div class="ribbon ribbon-top-right"><span>채택됨</span></div>
+            {% endif %}
+            <div class="d-flex justify-content-between align-items-center mb-2">
+              <h6 class="card-subtitle mb-0 fw-bold {% if answer.is_accepted %}text-success{% else %}text-primary{% endif %}">
+                {% if answer.is_anonymous %} 익명 {% else %} {{ answer.author.email }} {% endif %}
+              </h6>
+              <small class="text-muted">{{ answer.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+            </div>
+            <hr class="my-2" />
+            <div class="answer-content markdown-body">{{ answer.content }}</div>
+
+            <div class="d-flex justify-content-end mt-3">
+              {% if current_user.is_authenticated and current_user.id == answer.user_id %}
+              <a href="{{ url_for('ps_tips.edit_answer', answer_id=answer.id) }}" class="btn btn-sm btn-outline-primary me-2">수정</a>
+              <form method="POST" action="{{ url_for('ps_tips.delete_answer', answer_id=answer.id) }}" class="me-2">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <button type="submit" class="btn btn-sm btn-outline-danger">삭제</button>
+              </form>
+              {% endif %} {% if current_user.is_authenticated and current_user.id == question.user_id and not answer.is_accepted %}
+              <form method="POST" action="{{ url_for('ps_tips.accept_answer', answer_id=answer.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                <button type="submit" class="btn btn-sm btn-success">답변 채택</button>
+              </form>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-4">
+        <p class="text-muted mb-0">아직 답변이 없습니다. 첫 답변을 작성해보세요!</p>
+      </div>
+      {% endif %}
+
+      <!-- 답변 작성 폼 - 채택된 답변이 있으면 표시하지 않음 -->
+      {% if current_user.is_authenticated and question.answers.filter_by(is_accepted=True).count() == 0 %}
+      <div class="card mt-4">
+        <div class="card-header bg-light">
+          <h5 class="mb-0">답변 작성</h5>
+        </div>
+        <div class="card-body">
+          <form method="POST" action="{{ url_for('ps_tips.add_answer', question_id=question.id) }}">
+            {{ form.hidden_tag() }}
+            <div class="mb-3">
+              {{ form.content(class="form-control", rows=5, id="answer-editor", placeholder="답변을 입력하세요...") }} {% for error in form.content.errors %}
+              <div class="text-danger small">{{ error }}</div>
+              {% endfor %}
+            </div>
+            <!-- 익명 작성 옵션 추가 -->
+            <div class="mb-3 form-check">
+              {{ form.is_anonymous(class="form-check-input") }} {{ form.is_anonymous.label(class="form-check-label") }}
+              <small class="form-text text-muted">익명으로 작성 시 작성자 정보가 '익명'으로 표시됩니다.</small>
+            </div>
+            <div class="d-flex justify-content-end">{{ form.submit(class="btn btn-primary") }}</div>
+          </form>
+        </div>
+      </div>
+      {% elif question.answers.filter_by(is_accepted=True).count() > 0 %}
+      <div class="alert alert-success mt-4">
+        <i class="bi bi-check-circle-fill me-2"></i>
+        이 질문은 이미 채택된 답변이 있어 더 이상 답변을 작성할 수 없습니다.
+      </div>
+      {% elif not current_user.is_authenticated %}
+      <div class="alert alert-info mt-4">답변을 작성하려면 <a href="{{ url_for('auth.login', next=request.url) }}">로그인</a>이 필요합니다.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- 질문 삭제 확인 모달 -->
+{% if current_user.is_authenticated and current_user.id == question.user_id %}
+<div class="modal fade" id="deleteQuestionModal" tabindex="-1" aria-labelledby="deleteQuestionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteQuestionModalLabel">질문 삭제 확인</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">정말 이 질문을 삭제하시겠습니까? 이 작업은 되돌릴 수 없으며, 모든 답변도 함께 삭제됩니다.</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+        <form method="POST" action="{{ url_for('ps_tips.delete', question_id=question.id) }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+          <button type="submit" class="btn btn-danger">삭제</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %} {% endblock %} {% block styles %}
+<style>
+  /* 채택된 답변 리본 스타일 */
+  .ribbon {
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    position: absolute;
+  }
+  .ribbon-top-right {
+    top: -10px;
+    right: -10px;
+  }
+  .ribbon-top-right::before,
+  .ribbon-top-right::after {
+    border-top-color: transparent;
+    border-right-color: transparent;
+  }
+  .ribbon-top-right::before {
+    top: 0;
+    left: 0;
+  }
+  .ribbon-top-right::after {
+    bottom: 0;
+    right: 0;
+  }
+  .ribbon-top-right span {
+    position: absolute;
+    top: 30px;
+    right: -25px;
+    transform: rotate(45deg);
+    width: 150px;
+    padding: 7px 0;
+    background-color: #28a745;
+    color: white;
+    text-align: center;
+    font-size: 13px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 익명 게시글/댓글 스타일 */
+  .anonymous-post {
+    border-left: 3px solid #6c757d !important;
+  }
+
+  .anonymous-comment {
+    background-color: #f8f9fa;
+  }
+</style>
+{% endblock %} {% block scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // 마크다운 렌더링 (SimpleMDE가 설치되어 있다고 가정)
+    const postContent = document.querySelector(".post-content");
+    if (postContent) {
+      // XSS 공격 방지를 위한 설정
+      marked.setOptions({
+        sanitize: true,
+      });
+      // 원본 컨텐츠를 마크다운으로 렌더링
+      const rawContent = postContent.innerHTML;
+      postContent.innerHTML = marked(rawContent);
+    }
+
+    // 답변 내용도 마크다운으로 렌더링
+    const answerContents = document.querySelectorAll(".answer-content");
+    answerContents.forEach(function (content) {
+      const rawContent = content.innerHTML;
+      content.innerHTML = marked(rawContent);
+    });
+
+    // 답변 에디터 초기화
+    if (document.getElementById("answer-editor")) {
+      var simplemde = new SimpleMDE({
+        element: document.getElementById("answer-editor"),
+        spellChecker: false,
+        toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "code", "table", "|", "preview"],
+        placeholder: "답변을 입력하세요...",
+      });
+    }
+  });
+</script>
+{% endblock %}
